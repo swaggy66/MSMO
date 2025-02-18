@@ -16,12 +16,8 @@ This repo contains the data and code for our paper Multi-Scale and Multi-Objecti
 - Download the pre-trained multilingual language model mBERT or XLM-R
 - To quickly reproduce the results you can run the following setting:
 
-For train:
 ```
 bash run.sh 
 ```
-For evaluate:
-```
-bash evaluate.sh 
-```
+
 
