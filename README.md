@@ -1,6 +1,6 @@
 # MSMO
 
-This repo contains the data and code for our paper Multi-Scale and Multi-Objective Optimization for Cross-Lingual Aspect-Based Sentiment Analysis.
+This repo contains the data and code for our paper ****Multi-Scale and Multi-Objective Optimization for Cross-Lingual Aspect-Based Sentiment Analysis****.
 
 ## Requirements
 
