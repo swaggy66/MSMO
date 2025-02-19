@@ -18,7 +18,7 @@ This repo contains the data and code for our paper ****Multi-Scale and Multi-Obj
 - To quickly reproduce the results you can run the following setting:
 
 ```
-bash run.sh 
+bash run_absa.sh 
 ```
 
 ## Usage
