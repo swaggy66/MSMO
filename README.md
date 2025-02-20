@@ -2,6 +2,9 @@
 
 This repo contains the data and code for our paper ****Multi-Scale and Multi-Objective Optimization for Cross-Lingual Aspect-Based Sentiment Analysis****.
 
+[![arXiv](https://img.shields.io/badge/arXiv-2502.13718-b31b1b.svg)](https://arxiv.org/abs/2502.13718)
+
+
 ## Requirements
 
 - torch==1.3.1
@@ -33,5 +36,13 @@ To run experiments under different settings, change the exp_type setting:
 If the code is used in your research, please star our repo and cite our paper as follows:
 
 ```
-
+@misc{wu2025multi,
+      title={Multi-Scale and Multi-Objective Optimization for Cross-Lingual Aspect-Based Sentiment Analysis}, 
+      author={Chengyan Wu and Bolei Ma and Ningyuan Deng and Yanqing He and Yun Xue},
+      year={2025},
+      eprint={2502.13718},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2502.13718}, 
+}
 ```
