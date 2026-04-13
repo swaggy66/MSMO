@@ -169,7 +169,7 @@ def init_args():
     parser.add_argument('--fix_emb', action='store_true')
     parser.add_argument('--model_save_file', default='./save_model_adan')
     
-    #一致性损失
+
     # parser.add_argument('--uda_weight', default=0.00025,type=float)
     # parser.add_argument('--uda_weight', default=0.0035,type=float)
     parser.add_argument('--uda_weight', default=0.0025,type=float)
@@ -225,7 +225,7 @@ def repeat_dataloader(iterable):
         for x in iterable:
             yield x    
 
-#计算KL散度（单向）
+
 def compute_kl_loss(p, q, pad_mask=None):
     
     p_loss = F.kl_div(F.log_softmax(p, dim=-1), F.softmax(q, dim=-1), reduction='none')
@@ -483,7 +483,7 @@ def train_adan(args, train_dataset,train_dataset_source_without_label,train_data
     else:
         train_sampler = SequentialSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
     
-    #随机采样语言辨别器所需要的数据，总数和训练数据一样，acs为四个数据集
+
     if args.train_data_sampler == 'random':
         train_sampler_source = RandomSampler(train_dataset_source_without_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
     else:
@@ -502,7 +502,7 @@ def train_adan(args, train_dataset,train_dataset_source_without_label,train_data
         train_sampler_t2s = SequentialSampler(train_dataset_t2s_without_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
 
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
-    #构建批量的语言辨别器所需要的数据
+
     train_dataloader_source = DataLoader(train_dataset_source_without_label, sampler=train_sampler_source, batch_size=args.train_batch_size)
     train_dataloader_target = DataLoader(train_dataset_target_without_label, sampler=train_sampler_target, batch_size=args.train_batch_size)
     train_dataloader_s2t = DataLoader(train_dataset_s2t_without_label, sampler=train_sampler_s2t, batch_size=args.train_batch_size)
@@ -522,7 +522,7 @@ def train_adan(args, train_dataset,train_dataset_source_without_label,train_data
         no_grad = ["embeddings"] + ["layer." + str(layer_i) + "." for layer_i in range(12) if layer_i < args.freeze_bottom_layer]
     else:
         no_grad = None
-    #独立三个模型的参数
+
     # optimizer_grouped_parameters = get_optimizer_grouped_parameters(args, model, no_grad=no_grad)
     # optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
     # # scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=t_total)
@@ -546,7 +546,7 @@ def train_adan(args, train_dataset,train_dataset_source_without_label,train_data
     args.num_labels = num_tags
     logger.info(f"Perform XABSA task with label list being {tag_list} (n_labels={num_tags})")
 
-    #加载特征提取器
+
     # args.tfm_type = args.tfm_type.lower() 
     args.featuremodel = args.featuremodel.lower() 
     logger.info(f"Load pre-trained {args.featuremodel} model from `{args.model_name_or_path}`")
@@ -565,7 +565,7 @@ def train_adan(args, train_dataset,train_dataset_source_without_label,train_data
 
     # model = model_class.from_pretrained(args.model_name_or_path, config=config)
     # model.to(args.device)
-    #新增语言辨别器和特征提取层
+
         # models
     if args.featuremodel.lower() == 'adan_bert':
         F = DANFeatureExtractor.from_pretrained(args.model_name_or_path,config=config)
@@ -593,7 +593,7 @@ def train_adan(args, train_dataset,train_dataset_source_without_label,train_data
     )
     P = mBertABSASentimentClassifier.from_pretrained(args.model_name_or_path,config=config1)
 
-    #加载语言辨别器 其中分辨源语言或者是目标语言（标签只有两种）
+
     num_tags_language = 1
     config_class2, model_class2, tokenizer_class2 = MODEL_CLASSES[args.languagedetectmodel]
     config2 = config_class2.from_pretrained(
@@ -644,7 +644,7 @@ def train_adan(args, train_dataset,train_dataset_source_without_label,train_data
     train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
     set_seed(args)  # Added here for reproductibility (even between python 2 and 3)
     for n_epoch, _ in enumerate(train_iterator):
-        #新增FPQ的训练
+
         F.train()
         P.train()
         Q.train()
@@ -1102,7 +1102,7 @@ def train_adan_con(args, train_dataset,train_dataset_source_without_label,train_
         # train_dataset_s2t_without_label=iter(train_dataloader_s2t)
         # train_dataset_t2s_without_label=iter(train_dataloader_t2s)
         
-        #一致性损失
+
         label_kl_epoch_loss = 0
         unlabel_kl_epoch_loss = 0
         uda_epoch_loss = 0
@@ -1152,7 +1152,7 @@ def train_adan_con(args, train_dataset,train_dataset_source_without_label,train_
                     'attention_mask': batch['attention_mask'].to(args.device),
                     'token_type_ids': batch['token_type_ids'].to(args.device) if args.tfm_type != 'xlmr' else None
                     } for step, batch in enumerate(epoch_iterator_source)))
-        #带标签
+
         q_inputs_ch_iter1 = iter(({'input_ids':   batch['input_ids'].to(args.device),
                     'attention_mask': batch['attention_mask'].to(args.device),
                     'token_type_ids': batch['token_type_ids'].to(args.device) if args.tfm_type != 'xlmr' else None,
@@ -1173,7 +1173,7 @@ def train_adan_con(args, train_dataset,train_dataset_source_without_label,train_
                     'token_type_ids': batch['token_type_ids'].to(args.device) if args.tfm_type != 'xlmr' else None,
                     'labels':batch['labels'].to(args.device) 
                     } for step, batch in enumerate(epoch_iterator_source_label)))
-       # 带alignid
+
         q_inputs_ch_iter2 = iter(({'labels':batch['labels'].to(args.device) 
                     } for step, batch in enumerate(epoch_iterator_target_alignid)))
         inputs_ch_iter2 = iter(({'labels':batch['labels'].to(args.device) 
@@ -1214,7 +1214,7 @@ def train_adan_con(args, train_dataset,train_dataset_source_without_label,train_
                     'token_type_ids': batch['token_type_ids'].to(args.device) if args.tfm_type != 'xlmr' else None
                     }
             inputs_labels = {'labels': batch['labels'].to(args.device)}
-            #目标语言迭代数据
+
             try:
                 # inputs_ch = ({'input_ids':   batch['input_ids'].to(args.device),
                 #     'attention_mask': batch['attention_mask'].to(args.device),
@@ -1304,21 +1304,21 @@ def train_adan_con(args, train_dataset,train_dataset_source_without_label,train_
             utils.unfreeze_net(P)
             utils.freeze_net(Q)
             if args.fix_emb:
-                #冻结初始化的embeding参数（需要斟酌）
+     
                 utils.freeze_net(F.parameters)
             # clip Q weights
             for p in Q.parameters():
                 p.data.clamp_(args.clip_lower, args.clip_upper)
             F.zero_grad()
             P.zero_grad()
-            #对四个混合数据进行特征提取和方面词情感极性预测
+
             features_en = F(**inputs_with_label)
             o_en_sent = P(features_en,**inputs_with_label)
             #l_en_sent = functional.nll_loss(o_en_sent, inputs_labels)
             l_en_sent = o_en_sent[0]
             loss = l_en_sent
             print('loss:',loss)
-            #新的
+   
             loss.backward(retain_graph=True)
             o_en_ad = Q(features_en)
             l_en_ad = torch.mean(o_en_ad)
@@ -1430,12 +1430,12 @@ def train_adan_con(args, train_dataset,train_dataset_source_without_label,train_
                 #                            input_mask=attention_mask, labels=label_ids, output_emission=True)
                 # _, trans_e_scores, _ = model(words=input_ids2, word_seq_lens=word_seq_len2, orig_to_tok_index=orig_to_tok_index2,
                 #                            input_mask=attention_mask2, labels=label_ids2, output_emission=True)
-                #源语言的分数
+
                 features_en = F(**inputs_en_next1)
                 o_en_sent = P(features_en,**inputs_en_next1)
                 unlabel_e_scores=o_en_sent[1]
 
-                 #目标语言的分数
+ 
                 features_foreign = F(**inputs_ch_next1)
                 o_foreign_sent = P(features_foreign,**inputs_ch_next1)
                 trans_e_scores=o_foreign_sent[1]
@@ -1639,7 +1639,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
     else:
         train_sampler = SequentialSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
     
-    #随机采样语言辨别器所需要的数据，总数和训练数据一样，acs为四个数据集
+
     if args.train_data_sampler == 'random':
         train_sampler_source = RandomSampler(train_dataset_source_without_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
     else:
@@ -1657,7 +1657,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
     else:
         train_sampler_t2s = SequentialSampler(train_dataset_t2s_without_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
 
-    #按平行语料来训练语言辨别器
+
     # train_sampler_source = SequentialSampler(train_dataset_source_without_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
  
     # train_sampler_target = SequentialSampler(train_dataset_target_without_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
@@ -1666,7 +1666,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
 
     # train_sampler_t2s = SequentialSampler(train_dataset_t2s_without_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
        
- #不带alignid
+
     # if args.train_data_sampler == 'random':
     #     train_sampler_swl = RandomSampler(train_dataset_source_with_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
     # else:
@@ -1678,7 +1678,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
     train_sampler_swl = SequentialSampler(train_dataset_source_with_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
     train_sampler_twl = SequentialSampler(train_dataset_target_with_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
 
-#带alignid
+
     # if args.train_data_sampler == 'random':
     #     train_sampler_swl_alignid = RandomSampler(train_dataset_alignid_source) if args.local_rank == -1 else DistributedSampler(train_dataset)
     # else:
@@ -1692,7 +1692,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
 
 
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
-    #构建批量的语言辨别器所需要的数据
+
     train_dataloader_source = DataLoader(train_dataset_source_without_label, sampler=train_sampler_source, batch_size=args.train_batch_size)
     train_dataloader_target = DataLoader(train_dataset_target_without_label, sampler=train_sampler_target, batch_size=args.train_batch_size)
     train_dataloader_s2t = DataLoader(train_dataset_s2t_without_label, sampler=train_sampler_s2t, batch_size=args.train_batch_size)
@@ -1718,7 +1718,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
         no_grad = ["embeddings"] + ["layer." + str(layer_i) + "." for layer_i in range(12) if layer_i < args.freeze_bottom_layer]
     else:
         no_grad = None
-    #独立三个模型的参数
+
     # optimizer_grouped_parameters = get_optimizer_grouped_parameters(args, model, no_grad=no_grad)
     # optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
     # # scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=t_total)
@@ -1742,7 +1742,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
     args.num_labels = num_tags
     logger.info(f"Perform XABSA task with label list being {tag_list} (n_labels={num_tags})")
 
-    #加载特征提取器
+
     # args.tfm_type = args.tfm_type.lower() 
     args.featuremodel = args.featuremodel.lower() 
     logger.info(f"Load pre-trained {args.featuremodel} model from `{args.model_name_or_path}`")
@@ -1761,7 +1761,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
 
     # model = model_class.from_pretrained(args.model_name_or_path, config=config)
     # model.to(args.device)
-    #新增语言辨别器和特征提取层
+
         # models
     if args.featuremodel.lower() == 'adan_xml':
         # F = DANFeatureExtractor.from_pretrained(args.model_name_or_path,config=config)
@@ -1790,7 +1790,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
     )
     P = XLMABSASentimentClassifier.from_pretrained(args.model_name_or_path,config=config1)
 
-    #加载语言辨别器 其中分辨源语言或者是目标语言（标签只有两种）
+
     num_tags_language = 1
     config_class2, model_class2, tokenizer_class2 = MODEL_CLASSES[args.languagedetectmodel]
     config2 = config_class2.from_pretrained(
@@ -1841,7 +1841,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
     train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
     set_seed(args)  # Added here for reproductibility (even between python 2 and 3)
     for n_epoch, _ in enumerate(train_iterator):
-        #新增FPQ的训练
+
         F.train()
         P.train()
         Q.train()
@@ -2073,7 +2073,7 @@ def train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,t
             l_en_sent = o_en_sent[0]
             loss = l_en_sent
             print('loss:',loss)
-            #新的
+
             loss.backward(retain_graph=True)
             o_en_ad = Q(features_en)
             l_en_ad = torch.mean(o_en_ad)
@@ -2635,7 +2635,7 @@ def get_multi_teacher_probs(args, dataset, model_class):
     combined_preds = 1/3 * all_preds[0] + 1/3 * all_preds[1] + 1/3 * all_preds[2]
 
     return combined_preds
-    # 提取步数的函数
+
 def extract_step(checkpoint_name):
     match = re.search(r'checkpoint.*-(\d+)', checkpoint_name)
     return int(match.group(1)) if match else None
@@ -2732,7 +2732,7 @@ def main():
         #print(args)
         train_dataset = build_or_load_dataset(args, tokenizer, mode='train')
         
-        #不使用标签和训练
+
         train_dataset_source = build_or_load_dataset_languagedetect_source(args, tokenizer, mode='train')
         train_dataset_target = build_or_load_dataset_languagedetect_target(args, tokenizer, mode='train')
         train_dataset_source2target = build_or_load_dataset_languagedetect_source2target_codeswutch(args, tokenizer, mode='train')
@@ -2751,11 +2751,11 @@ def main():
         train_dataset_s2t_without_label = train_dataset_source2target
         train_dataset_t2s_without_label = train_dataset_target2source
 
-        #加入对抗平均网络的训练
+
         # _, _ = train_adan(args, train_dataset,train_dataset_source_without_label,train_dataset_target_without_label,train_dataset_s2t_without_label,train_dataset_t2s_without_label, model, tokenizer)
 
 
-        #加入对抗平均网络和一致性训练
+
         _, _ = train_adan_con(args, train_dataset,train_dataset_source_without_label,train_dataset_target_without_label,train_dataset_s2t_without_label,train_dataset_t2s_without_label,train_dataset_source_with_label,train_dataset_target_with_label,train_dataset_alignid_source,train_dataset_alignid_target, model, tokenizer)
         # _, _ = train_adan(args, train_dataset,train_dataset_source_without_label,train_dataset_target_without_label,train_dataset_s2t_without_label,train_dataset_t2s_without_label, model, tokenizer)
         # _, _ = train_adan_con_xlmr(args, train_dataset,train_dataset_source_without_label,train_dataset_target_without_label,train_dataset_s2t_without_label,train_dataset_t2s_without_label,train_dataset_source_with_label,train_dataset_target_with_label,train_dataset_alignid_source,train_dataset_alignid_target, model, tokenizer)
@@ -2826,7 +2826,7 @@ def main():
         dev_results, test_results = {}, {}
         best_f1, best_checkpoint, best_global_step = -999999.0, None, None
         all_checkpoints, global_steps = [], []
-        # 假设有两个列表分别存储不同类型的检查点
+
         all_checkpointsF, all_checkpointsP= [],[]
 
 
@@ -2854,12 +2854,11 @@ def main():
         #         all_checkpoints.append(sub_dir)
         # logger.info(f"We will perform validation on the following checkpoints: {all_checkpoints}")
 
-        #分别加载模型
-        # 遍历保存模型的主目录
+
         for f in os.listdir(args.output_dir):
             sub_dir = os.path.join(args.output_dir, f)
             if os.path.isdir(sub_dir):
-                # 根据子目录名称分类存储到不同的列表
+
                 if f.startswith('checkpointF-'):
                     all_checkpointsF.append(sub_dir)
                 elif f.startswith('checkpointP-'):
@@ -2885,16 +2884,16 @@ def main():
         logger.info("Load TEST dataset...")
         test_dataset = build_or_load_dataset(args, tokenizer1, mode='test')
 
-        # # 提取步数的函数
+
         # def extract_step(checkpoint_name):
         #     match = re.search(r'checkpoint.*-(\d+)', checkpoint_name)
         #     return int(match.group(1)) if match else None
 
-        # 将检查点按步数排序并同步
+
         checkpointsF_sorted = sorted(all_checkpointsF, key=extract_step)
         checkpointsP_sorted = sorted(all_checkpointsP, key=extract_step)
 
-        # 同步步数的检查点
+
         synchronized_checkpoints = [(f, p) for f, p in zip(checkpointsF_sorted, checkpointsP_sorted) if extract_step(f) == extract_step(p)]
 
         # global_steps_checkpoint = []
@@ -2917,14 +2916,14 @@ def main():
                 logger.info(f"\nLoad the trained model from {checkpointP}...")
                 # model = model_class.from_pretrained(checkpoint, config=config)
                 # model.to(args.device)
-                #加载F和P
+
                 model1 = model_class1.from_pretrained(checkpointF, config=config1)
                 model1.to(args.device)
                 model2 = model_class2.from_pretrained(checkpointP, config=config2)
                 model2.to(args.device)
 
                 #dev_result = evaluate(args, dev_dataset, model, idx2tag, mode='dev')
-                #评估
+
                 dev_result = evaluate_adan(args, dev_dataset, model1,model2, idx2tag, mode='dev')
                 # regard the micro-f1 as the criteria of model selection
                 metrics = 'micro_f1'
