@@ -1,6 +1,6 @@
 # MSMO
 
-This repo contains the data and code for our paper ****Multi-Scale and Multi-Objective Optimization for Cross-Lingual Aspect-Based Sentiment Analysis****.
+This repo contains the data and code for our paper ****MSMO-ABSA: Multi-Scale and Multi-Objective Optimization for Cross-Lingual Aspect-Based Sentiment Analysis**** (ACL 2026).
 
 [![arXiv](https://img.shields.io/badge/arXiv-2502.13718-b31b1b.svg)](https://arxiv.org/abs/2502.13718)
 
@@ -37,9 +37,9 @@ If the code is used in your research, please star our repo and cite our paper as
 
 ```
 @misc{wu2025multi,
-      title={Multi-Scale and Multi-Objective Optimization for Cross-Lingual Aspect-Based Sentiment Analysis}, 
-      author={Chengyan Wu and Bolei Ma and Ningyuan Deng and Yanqing He and Yun Xue},
-      year={2025},
+      title={MSMO-ABSA: Multi-Scale and Multi-Objective Optimization for Cross-Lingual Aspect-Based Sentiment Analysis}, 
+      author={Chengyan Wu and Bolei Ma and Ningyuan Deng and Yanqing He and Yun Xue and Xiaoyong Liu},
+      year={2026},
       eprint={2502.13718},
       archivePrefix={arXiv},
       primaryClass={cs.CL},
