@@ -88,7 +88,7 @@ def init_args():
     parser.add_argument("--ignore_cached_data", action='store_true')
     parser.add_argument("--train_data_sampler", type=str, default='random')
     parser.add_argument("--do_lower_case", action='store_true', help="Set this flag if you are using an uncased model.")
-    #任务描述（新增）
+
     parser.add_argument('--task', type=str, default='absa')
     # Other parameters
     parser.add_argument("--config_name", default="", type=str,
@@ -103,10 +103,10 @@ def init_args():
     parser.add_argument("--do_train", action='store_true', help="Whether to run training.")
     parser.add_argument("--do_distill", action='store_true', help="Whether to run knowledge distillation.")
     parser.add_argument("--trained_teacher_paths", type=str, help="path of the trained model")
-    #知识蒸馏教师模型F和Q
+  
     parser.add_argument("--trained_teacher_F_paths", type=str, help="path of the trained model",default='./outputs/xlmr-en-fr-acs/checkpointF-1500')
     parser.add_argument("--trained_teacher_P_paths", type=str, help="path of the trained model",default='./outputs/xlmr-en-fr-acs/checkpointP-1500')
-    #知识蒸馏的学生模型F和Q
+
     parser.add_argument("--student_F_model_path", type=str, help="path of the trained model",default='./outputs/xlmr-en-fr-acs/checkpointF-1500')
     parser.add_argument("--student_P_model_path", type=str, help="path of the trained model",default='./outputs/xlmr-en-fr-acs/checkpointP-1500')
 
@@ -487,7 +487,7 @@ def train_adan_student(args, train_dataset,train_dataset_source_without_label,tr
     else:
         train_sampler = SequentialSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
     
-    #随机采样语言辨别器所需要的数据，总数和训练数据一样，acs为四个数据集
+
     if args.train_data_sampler == 'random':
         train_sampler_source = RandomSampler(train_dataset_source_without_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
     else:
@@ -506,7 +506,7 @@ def train_adan_student(args, train_dataset,train_dataset_source_without_label,tr
         train_sampler_t2s = SequentialSampler(train_dataset_t2s_without_label) if args.local_rank == -1 else DistributedSampler(train_dataset)
 
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
-    #构建批量的语言辨别器所需要的数据
+
     train_dataloader_source = DataLoader(train_dataset_source_without_label, sampler=train_sampler_source, batch_size=args.train_batch_size)
     train_dataloader_target = DataLoader(train_dataset_target_without_label, sampler=train_sampler_target, batch_size=args.train_batch_size)
     train_dataloader_s2t = DataLoader(train_dataset_s2t_without_label, sampler=train_sampler_s2t, batch_size=args.train_batch_size)
@@ -526,7 +526,7 @@ def train_adan_student(args, train_dataset,train_dataset_source_without_label,tr
         no_grad = ["embeddings"] + ["layer." + str(layer_i) + "." for layer_i in range(12) if layer_i < args.freeze_bottom_layer]
     else:
         no_grad = None
-    #独立三个模型的参数
+
     # optimizer_grouped_parameters = get_optimizer_grouped_parameters(args, model, no_grad=no_grad)
     # optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
     # # scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=t_total)
@@ -550,7 +550,7 @@ def train_adan_student(args, train_dataset,train_dataset_source_without_label,tr
     args.num_labels = num_tags
     logger.info(f"Perform XABSA task with label list being {tag_list} (n_labels={num_tags})")
 
-    #加载特征提取器
+
     # args.tfm_type = args.tfm_type.lower() 
     args.featuremodel = args.featuremodel.lower() 
     logger.info(f"Load pre-trained {args.featuremodel} model from `{args.model_name_or_path}`")
@@ -646,7 +646,7 @@ def train_adan_student(args, train_dataset,train_dataset_source_without_label,tr
     train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
     set_seed(args)  # Added here for reproductibility (even between python 2 and 3)
     for n_epoch, _ in enumerate(train_iterator):
-        #新增FPQ的训练
+
         F.train()
         P.train()
         #Q.train()
@@ -1295,7 +1295,7 @@ def train_adan(args, train_dataset,train_dataset_source_without_label,train_data
     train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
     set_seed(args)  # Added here for reproductibility (even between python 2 and 3)
     for n_epoch, _ in enumerate(train_iterator):
-        #新增FPQ的训练
+
         F.train()
         P.train()
         Q.train()
@@ -1711,7 +1711,7 @@ def train_adan_xlmr(args, train_dataset,train_dataset_source_without_label,train
     train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
     set_seed(args)  # Added here for reproductibility (even between python 2 and 3)
     for n_epoch, _ in enumerate(train_iterator):
-        #新增FPQ的训练
+
         F.train()
         P.train()
         Q.train()
@@ -2145,7 +2145,7 @@ def train_adan_con(args, train_dataset,train_dataset_source_without_label,train_
     train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
     set_seed(args)  # Added here for reproductibility (even between python 2 and 3)
     for n_epoch, _ in enumerate(train_iterator):
-        #新增FPQ的训练
+
         F.train()
         P.train()
         Q.train()
@@ -3377,7 +3377,7 @@ def train_adan_con_xlmr_kd(args, train_dataset, student_model_F, student_model_P
     train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
     set_seed(args)  # Added here for reproductibility (even between python 2 and 3)
     for n_epoch, _ in enumerate(train_iterator):
-        #新增FPQ的训练
+
         F.train()
         P.train()
         #Q.train()
@@ -4161,7 +4161,7 @@ def main():
         device_id = 0
         # device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
         device = torch.device(f"cuda:{device_id}" if torch.cuda.is_available() and not args.no_cuda else "cpu")
-        #用0号服务器
+ 
         #device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
         args.n_gpu = torch.cuda.device_count()
     else:  # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
@@ -4241,7 +4241,7 @@ def main():
         #print(args)
         train_dataset = build_or_load_dataset(args, tokenizer, mode='train')
         
-        #不使用标签和训练
+
         train_dataset_source = build_or_load_dataset_languagedetect_source(args, tokenizer, mode='train')
         train_dataset_target = build_or_load_dataset_languagedetect_target(args, tokenizer, mode='train')
         train_dataset_source2target = build_or_load_dataset_languagedetect_source2target_codeswutch(args, tokenizer, mode='train')
@@ -4420,7 +4420,7 @@ def main():
         for f in os.listdir(args.output_dir):
             sub_dir = os.path.join(args.output_dir, f)
             if os.path.isdir(sub_dir):
-                # 根据子目录名称分类存储到不同的列表
+
                 if f.startswith('checkpointF-'):
                     all_checkpointsF.append(sub_dir)
                 elif f.startswith('checkpointP-'):
@@ -4474,14 +4474,14 @@ def main():
                 logger.info(f"\nLoad the trained model from {checkpointP}...")
                 # model = model_class.from_pretrained(checkpoint, config=config)
                 # model.to(args.device)
-                #加载F和P
+
                 model1 = model_class1.from_pretrained(checkpointF, config=config1)
                 model1.to(args.device)
                 model2 = model_class2.from_pretrained(checkpointP, config=config2)
                 model2.to(args.device)
 
                 #dev_result = evaluate(args, dev_dataset, model, idx2tag, mode='dev')
-                #评估
+
                 dev_result = evaluate_adan(args, dev_dataset, model1,model2, idx2tag, mode='dev')
                 # regard the micro-f1 as the criteria of model selection
                 metrics = 'micro_f1'
